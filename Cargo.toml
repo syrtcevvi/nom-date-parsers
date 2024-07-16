@@ -18,7 +18,7 @@ pretty_assertions = "1.4.0"
 rstest = "0.21.0"
 
 [features]
-all = ["numeric", "en", "ru"]
+full = ["numeric", "en", "ru"]
 default = ["numeric", "en"]
 
 numeric = []
