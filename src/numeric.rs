@@ -2,7 +2,7 @@ use chrono::{Datelike, Local, NaiveDate};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take},
-    character::complete::{digit1, space1},
+    character::complete::space1,
     combinator::map_res,
     sequence::{separated_pair, tuple},
 };
@@ -39,8 +39,22 @@ pub fn dd(input: &str) -> IResult<&str, u32> {
 
 /// Recognizes either one or two digits of a `day` part and returns the [`NaiveDate`] with the selected
 /// day and current month and year if the date exists, otherwise returns `None`
+///
+/// ```
+/// use chrono::prelude::*;
+/// use nom_date_parsers::prelude::*;
+///
+/// assert_eq!(dd_only("13")?.1, Local::now().date_naive().with_day(13));
+/// assert_eq!(dd_only("42"), Err(nom::Err::Error(Error::DayOutOfRange)));
+///
+/// # Ok::<(), Box::<dyn std::error::Error>>(())
+/// ```
 pub fn dd_only(input: &str) -> IResult<&str, Option<NaiveDate>> {
-    map_res(dd, |day: u32| Ok(Local::now().date_naive().with_day(day)))(input)
+    let (input, day) = dd(input)?;
+    let now = Local::now();
+    let (month, year) = (now.month(), now.year());
+
+    Ok((input, NaiveDate::from_ymd_opt(year, month, day)))
 }
 
 /// Recognizes either one or two digits of a `month` part
@@ -58,21 +72,27 @@ pub fn mm(input: &str) -> IResult<&str, u32> {
     Ok((input, mm))
 }
 
-/// Recognizes the `day` and the `month` parts separated by the [`numeric_date_parts_separator`] using the [`dd`] and [`mm`] parsers
+/// Recognizes the `day` and `month` parts separated by the [`numeric_date_parts_separator`] using the [`dd`] and [`mm`] parsers
 pub fn dd_mm(input: &str) -> IResult<&str, (u32, u32)> {
     separated_pair(dd, numeric_date_parts_separator, mm)(input)
 }
 
 /// Recognizes the `day` and `month` parts separated by the [`numeric_date_parts_separator`] and returns the [`NaiveDate`] with the selected
 /// day, month and current year if the date exists, otherwise returns `None`
+///
+/// ```
+/// use chrono::prelude::*;
+/// use nom_date_parsers::prelude::*;
+///
+/// assert_eq!(dd_mm_only("18-10")?.1, NaiveDate::from_ymd_opt(Local::now().year(), 10, 18));
+///
+/// # Ok::<(), Box::<dyn std::error::Error>>(())
+/// ```
 pub fn dd_mm_only(input: &str) -> IResult<&str, Option<NaiveDate>> {
-    map_res(dd_mm, |(dd, mm): (u32, u32)| {
-        Ok(Local::now()
-            .date_naive()
-            .with_month(mm)
-            .unwrap()
-            .with_day(dd))
-    })(input)
+    let (input, (day, month)) = dd_mm(input)?;
+    let year = Local::now().year();
+
+    Ok((input, NaiveDate::from_ymd_opt(year, month, day)))
 }
 
 /// Recognizes the `month` and `day` parts separated by the [`numeric_date_parts_separator`] using the [`mm`] and [`dd`] parsers
@@ -82,17 +102,25 @@ pub fn mm_dd(input: &str) -> IResult<&str, (u32, u32)> {
 
 /// Recognizes the `month` and `day` parts separated by the [`numeric_date_parts_separator`] and returns the [`NaiveDate`] with the selected
 /// day, month and current year if the date exists, otherwise returns `None`
+///
+/// ```
+/// use chrono::prelude::*;
+/// use nom_date_parsers::prelude::*;
+///
+/// assert_eq!(mm_dd_only("10/18")?.1, NaiveDate::from_ymd_opt(Local::now().year(), 10, 18));
+///
+/// # Ok::<(), Box::<dyn std::error::Error>>(())
+/// ```
 pub fn mm_dd_only(input: &str) -> IResult<&str, Option<NaiveDate>> {
-    map_res(mm_dd, |(mm, dd): (u32, u32)| {
-        Ok(Local::now()
-            .date_naive()
-            .with_month(mm)
-            .unwrap()
-            .with_day(dd))
-    })(input)
+    let (input, (month, day)) = mm_dd(input)?;
+
+    Ok((
+        input,
+        NaiveDate::from_ymd_opt(Local::now().year(), month, day),
+    ))
 }
 
-//// Recognizes four digits of the `year` part
+/// Recognizes four digits of the `year` part
 ///
 /// Accepts numbers in the range `0000..=9999`, technically
 pub fn y4(input: &str) -> IResult<&str, u32> {
@@ -101,6 +129,15 @@ pub fn y4(input: &str) -> IResult<&str, u32> {
 
 /// Recognizes the `year`, `month` and `day` parts separated by the [`numeric_date_parts_separator`] and returns [`NaiveDate`] with the selected parts
 /// if the date exists, otherwise returns `None`
+///
+/// ```
+/// use chrono::prelude::*;
+/// use nom_date_parsers::prelude::*;
+///
+/// assert_eq!(y4_mm_dd("2024-07-13")?.1, NaiveDate::from_ymd_opt(2024, 7, 13));
+///
+/// # Ok::<(), Box::<dyn std::error::Error>>(())
+/// ```
 pub fn y4_mm_dd(input: &str) -> IResult<&str, Option<NaiveDate>> {
     let (input, (y4, (), mm, (), dd)) = tuple((
         y4,
@@ -115,6 +152,15 @@ pub fn y4_mm_dd(input: &str) -> IResult<&str, Option<NaiveDate>> {
 
 /// Recognizes the `day`, `month` and `year` parts separated by the [`numeric_date_parts_separator`] and returns [`NaiveDate`] with the selected parts
 /// if the date exists, otherwise returns `None`
+///
+/// ```
+/// use chrono::prelude::*;
+/// use nom_date_parsers::prelude::*;
+///
+/// assert_eq!(dd_mm_y4("13/07/2024")?.1, NaiveDate::from_ymd_opt(2024, 7, 13));
+///
+/// # Ok::<(), Box::<dyn std::error::Error>>(())
+/// ```
 pub fn dd_mm_y4(input: &str) -> IResult<&str, Option<NaiveDate>> {
     let (input, (dd, (), mm, (), y4)) = tuple((
         dd,
@@ -129,6 +175,15 @@ pub fn dd_mm_y4(input: &str) -> IResult<&str, Option<NaiveDate>> {
 
 /// Recognizes the `month`, `day` and `year` parts separated by the [`numeric_date_parts_separator`] and returns [`NaiveDate`] with the selected parts
 /// if the date exists, otherwise returns `None`
+///
+/// ```
+/// use chrono::prelude::*;
+/// use nom_date_parsers::prelude::*;
+///
+/// assert_eq!(mm_dd_y4("07-13-2024")?.1, NaiveDate::from_ymd_opt(2024, 7, 13));
+///
+/// # Ok::<(), Box::<dyn std::error::Error>>(())
+/// ```
 pub fn mm_dd_y4(input: &str) -> IResult<&str, Option<NaiveDate>> {
     let (input, (mm, (), dd, (), y4)) = tuple((
         mm,
