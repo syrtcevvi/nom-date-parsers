@@ -9,11 +9,10 @@ use nom::{
 
 use crate::{error::Error, types::IResult};
 
-/// Recognizes a separator of numeric date parts in the following templates:
+/// Recognizes a separator of numeric date parts in the following templates (asterisk symbol denotes some separator):
 /// - dd*mm*yyyy
 /// - mm*dd*yyyy
 /// - yyyy*mm*dd
-/// Where the asterisk symbol denotes some separator
 pub fn numeric_date_parts_separator(input: &str) -> IResult<&str, ()> {
     let (input, _) = alt((tag("/"), tag("-"), tag("."), space1))(input)?;
 
