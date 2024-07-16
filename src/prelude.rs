@@ -1,1 +1,1 @@
-pub use crate::numeric::*;
+pub use crate::{error::Error, numeric::*};
