@@ -9,7 +9,7 @@ name: Continuous integration
 
 env:
   RUSTFLAGS: "-Dwarnings"
-  RUSTDOCFLAGS: "--cfg docsrs -Dwarnings"
+  RUSTDOCFLAGS: "-Dwarnings"
   RUST_BACKTRACE: short
 
   CARGO_INCREMENTAL: 0
@@ -82,7 +82,7 @@ jobs:
             features: "--features full"
           - rust: nightly
             toolchain: nightly-2024-07-03
-            features: "--features full nightly"
+            features: "--features full"
           - rust: msrv
             toolchain: 1.79.0
             features: "--features full"
@@ -98,27 +98,7 @@ jobs:
 
       - name: Cache Dependencies
         uses: Swatinem/rust-cache@v2
-
-      # Generally MSRV dump is not considered a breaking change in by the Rust community.
-      # Thus a minor or a patch version dump of a dependency of ours, can bump MSRV.
-      # (remember that `cargo` uses newest semver compatible versions by default)
-      #
-      # It's silly to bump MSRV every time minor dependency update does (note that this update can
-      # happen even after our crate is published; so users may need to downgrade crates in
-      # `Cargo.lock` independently of how we test our crates), so we downgrade their versions in
-      # MSRV CI specifically instead. This allows as to
-      # 1. Not update MSRV unless we really need to
-      # 2. Test newest (or at least newer) versions of crates in CI
-      #
-      # Example command: `cargo update -p atomic-write-file@0.1.3 --precise 0.1.2`
-      - name: Downgrade deps for MSRV
-        if: ${{ matrix.rust == 'msrv' }}
-        run: |
-            cargo update -p sqlx --precise 0.7.3
-            cargo update -p atomic-write-file --precise 0.1.2
-            exit 0
         
-      # NB. Don't test (build) examples so we can use non-msrv features in them (--tests/--doc)
       - name: Compile
         run: |
           cargo +${{ matrix.toolchain }} test --tests --no-run --verbose ${{ matrix.features }}
@@ -170,7 +150,7 @@ jobs:
 
       - name: clippy
         run: |
-          cargo clippy --all-targets --features "full nightly"
+          cargo clippy --all-targets --features "full"
 
   doc:
     name: check docs
@@ -190,4 +170,4 @@ jobs:
 
       - name: rustdoc
         run: |
-          cargo docs # from .cargo/config.toml
+          cargo doc
