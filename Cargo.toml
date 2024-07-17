@@ -3,7 +3,7 @@ name = "nom-date-parsers"
 authors = ["Сырцев Вадим Игоревич <syrtcevvi@gmail.com>"]
 version = "0.1.0"
 edition = "2021"
-description = "The bunch of combinators written with help of [nom](https://docs.rs/nom/latest/nom/) to parse the `numeric` and `language-specific` dates"
+description = "The bunch of combinators written with help of nom to parse the `numeric` and `language-specific` dates"
 keywords = [
     "parsers",
     "numeric-dates",
