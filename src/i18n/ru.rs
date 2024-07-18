@@ -9,15 +9,21 @@ use nom::{
 
 use crate::{i18n::naive_date_for_weekday, types::IResult};
 
-/// Recognizes the yesterday `case insensitive` word in `Russian` and returns the corresponding [`NaiveDate`] for it
+/// Recognizes the yesterday `case insensitive` word in `Russian` and returns
+/// the corresponding [`NaiveDate`] for it
+///
+/// # Examples
 ///
 /// ```
 /// use std::ops::Sub;
 ///
-/// use chrono::{Local, NaiveDate, Days};
+/// use chrono::{Days, Local, NaiveDate};
 /// use nom_date_parsers::i18n::ru::yesterday;
 ///
-/// assert_eq!(yesterday("Вчера")?.1, Local::now().sub(Days::new(1)).date_naive());
+/// assert_eq!(
+///     yesterday("Вчера")?.1,
+///     Local::now().sub(Days::new(1)).date_naive()
+/// );
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 pub fn yesterday(input: &str) -> IResult<&str, NaiveDate> {
@@ -27,15 +33,21 @@ pub fn yesterday(input: &str) -> IResult<&str, NaiveDate> {
     )(input)
 }
 
-/// Recognizes the tomorrow `case insensitive` word in `Russian` and returns the corresponding [`NaiveDate`] for it
+/// Recognizes the tomorrow `case insensitive` word in `Russian` and returns the
+/// corresponding [`NaiveDate`] for it
+///
+/// # Examples
 ///
 /// ```
 /// use std::ops::Add;
 ///
-/// use chrono::{Local, NaiveDate, Days};
+/// use chrono::{Days, Local, NaiveDate};
 /// use nom_date_parsers::i18n::ru::tomorrow;
 ///
-/// assert_eq!(tomorrow("завтра")?.1, Local::now().add(Days::new(1)).date_naive());
+/// assert_eq!(
+///     tomorrow("завтра")?.1,
+///     Local::now().add(Days::new(1)).date_naive()
+/// );
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 pub fn tomorrow(input: &str) -> IResult<&str, NaiveDate> {
@@ -47,11 +59,11 @@ pub fn tomorrow(input: &str) -> IResult<&str, NaiveDate> {
 
 /// Recognizes the `case insensitive` short-named weekday in `Russian`
 ///
+/// # Examples
+///
 /// ```
 /// use chrono::Weekday;
-/// use nom_date_parsers::{
-///     i18n::ru::short_named_weekday,
-/// };
+/// use nom_date_parsers::i18n::ru::short_named_weekday;
 ///
 /// assert_eq!(short_named_weekday("пт")?.1, Weekday::Fri);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
@@ -70,11 +82,11 @@ pub fn short_named_weekday(input: &str) -> IResult<&str, Weekday> {
 
 /// Recognizes the `case insensitive` full-named weekday in `Russian`
 ///
+/// # Examples
+///
 /// ```
 /// use chrono::Weekday;
-/// use nom_date_parsers::{
-///     i18n::ru::full_named_weekday,
-/// };
+/// use nom_date_parsers::i18n::ru::full_named_weekday;
 ///
 /// assert_eq!(full_named_weekday("среда")?.1, Weekday::Wed);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
@@ -91,13 +103,14 @@ pub fn full_named_weekday(input: &str) -> IResult<&str, Weekday> {
     ))(input)
 }
 
-/// Recognizes either the `case insensitive` short-named or full-named weekday in `Russian`
+/// Recognizes either the `case insensitive` short-named or full-named weekday
+/// in `Russian`
+///
+/// # Examples
 ///
 /// ```
 /// use chrono::Weekday;
-/// use nom_date_parsers::{
-///     i18n::ru::named_weekday,
-/// };
+/// use nom_date_parsers::i18n::ru::named_weekday;
 ///
 /// assert_eq!(named_weekday("пт")?.1, Weekday::Fri);
 /// assert_eq!(named_weekday("Пятница")?.1, Weekday::Fri);
@@ -107,17 +120,20 @@ pub fn named_weekday(input: &str) -> IResult<&str, Weekday> {
     alt((full_named_weekday, short_named_weekday))(input)
 }
 
-/// Recognizes the `case insensitive` weekday in `Russian` using the [`named_weekday`] function and returns the corresponding [`NaiveDate`]
+/// Recognizes the `case insensitive` weekday in `Russian` using the
+/// [`named_weekday`] function and returns the corresponding [`NaiveDate`]
 /// for the current week
+///
+/// # Examples
 ///
 /// ```
 /// use chrono::{NaiveDate, Weekday};
-/// use nom_date_parsers::i18n::{
-///     naive_date_for_weekday,
-///     ru::current_named_weekday_only
-/// };
+/// use nom_date_parsers::i18n::{naive_date_for_weekday, ru::current_named_weekday_only};
 ///
-/// assert_eq!(current_named_weekday_only("Среда")?.1, naive_date_for_weekday(Weekday::Wed));
+/// assert_eq!(
+///     current_named_weekday_only("Среда")?.1,
+///     naive_date_for_weekday(Weekday::Wed)
+/// );
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 pub fn current_named_weekday_only(input: &str) -> IResult<&str, NaiveDate> {
@@ -126,7 +142,8 @@ pub fn current_named_weekday_only(input: &str) -> IResult<&str, NaiveDate> {
     })(input)
 }
 
-// pub fn next_week_named_weekday_only(input: &str) -> IResult<&str, NaiveDate> {}
+// pub fn next_week_named_weekday_only(input: &str) -> IResult<&str, NaiveDate>
+// {}
 
 #[cfg(test)]
 mod tests {

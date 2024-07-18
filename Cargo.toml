@@ -16,6 +16,13 @@ license = "MIT"
 homepage = "https://github.com/syrtcevvi/nom-date-parsers"
 repository = "https://github.com/syrtcevvi/nom-date-parsers"
 
+[features]
+default = ["numeric", "en"]
+
+numeric = []
+ru = []
+en = []
+
 [dependencies]
 chrono = "0.4.38"
 nom = "7.1.3"
@@ -25,10 +32,9 @@ thiserror = "1.0.61"
 pretty_assertions = "1.4.0"
 rstest = "0.21.0"
 
-[features]
-full = ["numeric", "en", "ru"]
-default = ["numeric", "en"]
-
-numeric = []
-ru = []
-en = []
+[package.metadata.docs.rs]
+# document all features
+all-features = true
+rustdoc-args = ["--cfg", "docsrs", "-Znormalize-docs"]
+rustc-args = ["--cfg", "dep_docsrs"]
+cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]

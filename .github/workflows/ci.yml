@@ -76,16 +76,16 @@ jobs:
         include:
           - rust: stable
             toolchain: stable
-            features: "--features full"
+            features: "--all-features"
           - rust: beta
             toolchain: beta
-            features: "--features full"
+            features: "--all-features"
           - rust: nightly
             toolchain: nightly-2024-07-03
-            features: "--features full"
+            features: "--all-features"
           - rust: msrv
             toolchain: 1.79.0
-            features: "--features full"
+            features: "--all-features"
 
     steps:
       - name: Checkout
@@ -129,7 +129,7 @@ jobs:
 
       - name: Check examples
         run: |
-          cargo +stable check --examples --features full
+          cargo +stable check --examples --all-features
 
   clippy:
     name: Run linter
@@ -150,7 +150,7 @@ jobs:
 
       - name: clippy
         run: |
-          cargo clippy --all-targets --features "full"
+          cargo clippy --all-targets --all-features
 
   doc:
     name: check docs

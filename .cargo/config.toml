@@ -1,0 +1,6 @@
+[alias]
+# To test docs locally run: cargo +nightly docs --open
+docs = """doc
+--all-features
+-Zrustdoc-scrape-examples
+"""
