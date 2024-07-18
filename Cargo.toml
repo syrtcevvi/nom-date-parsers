@@ -19,6 +19,9 @@ repository = "https://github.com/syrtcevvi/nom-date-parsers"
 [features]
 default = ["numeric", "en"]
 
+# Currently used for building docs for `docsrs` to add `This is supported on feature="..." only.`
+nightly = []
+
 numeric = []
 ru = []
 en = []
@@ -36,5 +39,4 @@ rstest = "0.21.0"
 # document all features
 all-features = true
 rustdoc-args = ["--cfg", "docsrs", "-Znormalize-docs"]
-rustc-args = ["--cfg", "dep_docsrs"]
 cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]
