@@ -7,10 +7,14 @@ use nom::{
     combinator::{map_res, value},
 };
 
-use crate::{i18n::naive_date_for_weekday, types::IResult};
+use crate::{
+    i18n::naive_date_for_weekday,
+    numeric::{dd_mm_only, dd_mm_y4, dd_only, mm_dd_only, mm_dd_y4},
+    types::IResult,
+};
 
-/// Recognizes the yesterday `case insensitive` word in `English` and returns
-/// the corresponding [`NaiveDate`] for it
+/// Recognizes the `case insensitive` word `yesterday` in `English` and returns
+/// the corresponding [`NaiveDate`] for it.
 ///
 /// # Examples
 ///
@@ -33,8 +37,35 @@ pub fn yesterday(input: &str) -> IResult<&str, NaiveDate> {
     )(input)
 }
 
-/// Recognizes the tomorrow `case insensitive` word in `English` and returns the
-/// corresponding [`NaiveDate`] for it
+/// Recognizes the `case insensitive` word `yesterday` in `Russian` and returns
+/// the corresponding [`Option<NaiveDate>`] for it.
+///
+/// Is used to provide the handy way to combine it with
+/// other parsers returning [`Option<NaiveDate>`], so it always `Some(_)`.
+///
+/// # Examples
+///
+/// ```
+/// use chrono::NaiveDate;
+/// use nom::branch::alt;
+/// use nom_date_parsers::{i18n::ru::yesterday_opt, numeric::dd_only};
+///
+/// fn versatile_date_parser(input: &str) -> Option<NaiveDate> {
+///     alt((
+///         dd_only,
+///         // Here we can't use the plain "yesterday" parser
+///         yesterday_opt,
+///     ))(input)
+///     .ok()
+///     .and_then(|p| p.1)
+/// }
+/// ```
+pub fn yesterday_opt(input: &str) -> IResult<&str, Option<NaiveDate>> {
+    yesterday(input).map(|r| (r.0, Some(r.1)))
+}
+
+/// Recognizes the `case insensitive` word `tomorrow` in `English` and returns
+/// the corresponding [`NaiveDate`] for it.
 ///
 /// # Examples
 ///
@@ -57,7 +88,43 @@ pub fn tomorrow(input: &str) -> IResult<&str, NaiveDate> {
     )(input)
 }
 
-/// Recognizes the `case insensitive` short-named weekday in `English`
+/// Recognizes the `case insensitive` word `tomorrow` in `English` and returns
+/// the corresponding [`Option<NaiveDate>`] for it.
+///
+/// Is used to provide the handy way to combine it with
+/// other parsers returning [`Option<NaiveDate>`], so it always `Some(_)`.
+///
+/// # Examples
+///
+/// ```
+/// use chrono::NaiveDate;
+/// use nom::branch::alt;
+/// use nom_date_parsers::{i18n::en::tomorrow_opt, numeric::dd_only};
+///
+/// fn versatile_date_parser(input: &str) -> Option<NaiveDate> {
+///     alt((
+///         dd_only,
+///         // Here we can't use the plain "tomorrow" parser
+///         tomorrow_opt,
+///     ))(input)
+///     .ok()
+///     .and_then(|p| p.1)
+/// }
+/// ```
+pub fn tomorrow_opt(input: &str) -> IResult<&str, Option<NaiveDate>> {
+    tomorrow(input).map(|r| (r.0, Some(r.1)))
+}
+
+/// Recognizes the `case insensitive` short-named weekday in `English`.
+///
+/// The following words are accepted:
+/// - `mon` -> [`Weekday::Mon`]
+/// - `tue` | `tues` -> [`Weekday::Tue`]
+/// - `wed` -> [`Weekday::Wed`]
+/// - `thu` | `thur` | `thurs` -> [`Weekday::Thu`]
+/// - `fri` -> [`Weekday::Fri`]
+/// - `sat` -> [`Weekday::Sat`]
+/// - `sun` -> [`Weekday::Sun`]
 ///
 /// # Examples
 ///
@@ -83,7 +150,16 @@ pub fn short_named_weekday(input: &str) -> IResult<&str, Weekday> {
     ))(input)
 }
 
-/// Recognizes the `case insensitive` full-named weekday in `English`
+/// Recognizes the `case insensitive` full-named weekday in `English`.
+///
+/// The following words are accepted:
+/// - `monday` -> [`Weekday::Mon`]
+/// - `tuesday` -> [`Weekday::Tue`]
+/// - `wednesday` -> [`Weekday::Wed`]
+/// - `thursday` -> [`Weekday::Thu`]
+/// - `friday` -> [`Weekday::Fri`]
+/// - `saturday` -> [`Weekday::Sat`]
+/// - `sunday` -> [`Weekday::Sun`]
 ///
 /// # Examples
 ///
@@ -107,7 +183,8 @@ pub fn full_named_weekday(input: &str) -> IResult<&str, Weekday> {
 }
 
 /// Recognizes either the `case insensitive` short-named or full-named weekday
-/// in `English`
+/// in `English`. Uses the [`short_named_weekday`] and [`full_named_weekday`]
+/// parsers.
 ///
 /// # Examples
 ///
@@ -125,7 +202,7 @@ pub fn named_weekday(input: &str) -> IResult<&str, Weekday> {
 
 /// Recognizes the `case insensitive` weekday in `English` using the
 /// [`named_weekday`] function and returns the corresponding [`NaiveDate`]
-/// for the current week
+/// for the current week.
 ///
 /// # Examples
 ///
@@ -145,8 +222,79 @@ pub fn current_named_weekday_only(input: &str) -> IResult<&str, NaiveDate> {
     })(input)
 }
 
+/// Recognizes the `case insensitive` weekday in `English` using the
+/// [`current_named_weekday_only`] parser and returns the [`Option<NaiveDate>`].
+///
+/// Is used to provide the handy way to combine it with
+/// other parsers returning [`Option<NaiveDate>`], so it always returns
+/// `Some(_)`.
+///
+/// # Examples
+///
+/// ```
+/// use chrono::NaiveDate;
+/// use nom::branch::alt;
+/// use nom_date_parsers::{i18n::en::current_named_weekday_only_opt, numeric::dd_only};
+///
+/// fn versatile_date_parser(input: &str) -> Option<NaiveDate> {
+///     alt((
+///         dd_only,
+///         // Here we can't use the plain "current_named_weekday_only" parser
+///         current_named_weekday_only_opt,
+///     ))(input)
+///     .ok()
+///     .and_then(|p| p.1)
+/// }
+/// ```
+pub fn current_named_weekday_only_opt(input: &str) -> IResult<&str, Option<NaiveDate>> {
+    current_named_weekday_only(input).map(|r| (r.0, Some(r.1)))
+}
+
+/// Uses the following parsers to recognize the `numeric` and
+/// `language-specific` dates in `English`. Uses the `day-month-year` sequence:
+/// - Numeric date parsers:
+///     - [`dd_only`]
+///     - [`dd_mm_only`]
+///     - [`dd_mm_y4`]
+/// - Language-specific
+///     - [`yesterday_opt`]
+///     - [`tomorrow_opt`]
+///     - [`current_named_weekday_only_opt`]
+pub fn bundle_dmy(input: &str) -> IResult<&str, Option<NaiveDate>> {
+    alt((
+        dd_mm_y4,
+        dd_mm_only,
+        dd_only,
+        yesterday_opt,
+        tomorrow_opt,
+        current_named_weekday_only_opt,
+    ))(input)
+}
+
+/// Uses the following parsers to recognize the `numeric` and
+/// `language-specific` dates in `English`. Uses the `month-day-year` sequence:
+/// - Numeric date parsers:
+///     - [`dd_only`]
+///     - [`mm_dd_only`]
+///     - [`mm_dd_y4`]
+/// - Language-specific
+///     - [`yesterday_opt`]
+///     - [`tomorrow_opt`]
+///     - [`current_named_weekday_only_opt`]
+pub fn bundle_mdy(input: &str) -> IResult<&str, Option<NaiveDate>> {
+    alt((
+        mm_dd_y4,
+        mm_dd_only,
+        dd_only,
+        yesterday_opt,
+        tomorrow_opt,
+        current_named_weekday_only_opt,
+    ))(input)
+}
+
 #[cfg(test)]
 mod tests {
+    use chrono::Datelike;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
@@ -159,9 +307,21 @@ mod tests {
     }
 
     #[rstest]
+    #[case("Yesterday", Ok(("", Some(Local::now().sub(Days::new(1)).date_naive()))))]
+    fn test_yesterday_opt(#[case] input: &str, #[case] expected: IResult<&str, Option<NaiveDate>>) {
+        assert_eq!(yesterday_opt(input), expected);
+    }
+
+    #[rstest]
     #[case("Tomorrow", Ok(("", Local::now().add(Days::new(1)).date_naive())))]
     fn test_tomorrow(#[case] input: &str, #[case] expected: IResult<&str, NaiveDate>) {
         assert_eq!(tomorrow(input), expected);
+    }
+
+    #[rstest]
+    #[case("Tomorrow", Ok(("", Some(Local::now().add(Days::new(1)).date_naive()))))]
+    fn test_tomorrow_opt(#[case] input: &str, #[case] expected: IResult<&str, Option<NaiveDate>>) {
+        assert_eq!(tomorrow_opt(input), expected);
     }
 
     #[rstest]
@@ -195,5 +355,35 @@ mod tests {
         #[case] expected: IResult<&str, NaiveDate>,
     ) {
         assert_eq!(current_named_weekday_only(input), expected)
+    }
+
+    #[rstest]
+    #[case("mon", Ok(("", Some(naive_date_for_weekday(Weekday::Mon)))))]
+    #[case("Tuesday", Ok(("", Some(naive_date_for_weekday(Weekday::Tue)))))]
+    fn test_current_named_weekday_only_opt(
+        #[case] input: &str,
+        #[case] expected: IResult<&str, Option<NaiveDate>>,
+    ) {
+        assert_eq!(current_named_weekday_only_opt(input), expected)
+    }
+
+    #[rstest]
+    #[case("09", Ok(("", Local::now().date_naive().with_day(9))))]
+    #[case("03/12", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(12))))]
+    #[case("13    06\t2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
+    #[case("Yesterday", Ok(("", Some(Local::now().sub(Days::new(1)).date_naive()))))]
+    #[case("Tomorrow", Ok(("", Some(Local::now().add(Days::new(1)).date_naive()))))]
+    fn test_bundle_dmy(#[case] input: &str, #[case] expected: IResult<&str, Option<NaiveDate>>) {
+        assert_eq!(bundle_dmy(input), expected)
+    }
+
+    #[rstest]
+    #[case("09", Ok(("", Local::now().date_naive().with_day(9))))]
+    #[case("12/03", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(12))))]
+    #[case("06    13\t2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
+    #[case("Yesterday", Ok(("", Some(Local::now().sub(Days::new(1)).date_naive()))))]
+    #[case("Tomorrow", Ok(("", Some(Local::now().add(Days::new(1)).date_naive()))))]
+    fn test_bundle_mdy(#[case] input: &str, #[case] expected: IResult<&str, Option<NaiveDate>>) {
+        assert_eq!(bundle_mdy(input), expected)
     }
 }
