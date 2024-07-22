@@ -5,5 +5,7 @@ pub mod i18n;
 #[cfg(feature = "numeric")]
 pub mod numeric;
 pub mod prelude;
+#[cfg(feature = "quick")]
+pub mod quick;
 
 mod types;

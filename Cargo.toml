@@ -17,12 +17,13 @@ homepage = "https://github.com/syrtcevvi/nom-date-parsers"
 repository = "https://github.com/syrtcevvi/nom-date-parsers"
 
 [features]
-default = ["numeric", "en"]
+default = ["numeric", "quick", "en"]
 
 # Currently used for building docs for `docsrs` to add `This is supported on feature="..." only.`
 nightly = []
 
 numeric = []
+quick = []
 ru = []
 en = []
 
