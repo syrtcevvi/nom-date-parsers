@@ -16,20 +16,20 @@ use crate::{error::Error, types::IResult};
 /// - yyyy\*mm\*dd
 ///
 /// Currently the following separators are recognized: `/`, `-`, `.` and any
-/// number of spaces and tabs
+/// number of spaces and tabs.
 pub fn numeric_date_parts_separator(input: &str) -> IResult<&str, ()> {
     let (input, _) = alt((tag("/"), tag("-"), tag("."), space1))(input)?;
 
     Ok((input, ()))
 }
 
-/// Recognizes either one or two digits of a `day` part
+/// Recognizes either one or two digits of a `day` part.
 ///
 /// Accepts numbers in the range `01..=31`, otherwise returns
-/// [`Error::DayOutOfRange`]
+/// [`Error::DayOutOfRange`].
 ///
 /// It can be used to recognize the `dd` part in the `dd`/mm/yyyy pattern, for
-/// instance
+/// instance.
 pub fn dd(input: &str) -> IResult<&str, u32> {
     let (input, dd) = alt((
         map_res(take(2_u8), |s: &str| s.parse()),
@@ -44,7 +44,7 @@ pub fn dd(input: &str) -> IResult<&str, u32> {
 
 /// Recognizes either one or two digits of a `day` part and returns the
 /// [`NaiveDate`] with the selected day and current month and year if the date
-/// exists, otherwise returns `None`
+/// exists, otherwise returns `None`.
 ///
 /// # Examples
 ///
@@ -65,9 +65,9 @@ pub fn dd_only(input: &str) -> IResult<&str, Option<NaiveDate>> {
     Ok((input, NaiveDate::from_ymd_opt(year, month, day)))
 }
 
-/// Recognizes either one or two digits of a `month` part
+/// Recognizes either one or two digits of a `month` part.
 ///
-/// Accepts numbers in the range `01..=12`, otherwise returns
+/// Accepts numbers in the range `01..=12`, otherwise returns.
 /// [`Error::MonthOutOfRange`]
 pub fn mm(input: &str) -> IResult<&str, u32> {
     let (input, mm) = alt((
@@ -82,7 +82,7 @@ pub fn mm(input: &str) -> IResult<&str, u32> {
 }
 
 /// Recognizes the `day` and `month` parts separated by the
-/// [`numeric_date_parts_separator`] using the [`dd`] and [`mm`] parsers
+/// [`numeric_date_parts_separator`] using the [`dd`] and [`mm`] parsers.
 pub fn dd_mm(input: &str) -> IResult<&str, (u32, u32)> {
     separated_pair(dd, numeric_date_parts_separator, mm)(input)
 }
@@ -90,7 +90,7 @@ pub fn dd_mm(input: &str) -> IResult<&str, (u32, u32)> {
 /// Recognizes the `day` and `month` parts separated by the
 /// [`numeric_date_parts_separator`] and returns the [`NaiveDate`] with the
 /// selected day, month and current year if the date exists, otherwise returns
-/// `None`
+/// `None`.
 ///
 /// # Examples
 ///
@@ -113,7 +113,7 @@ pub fn dd_mm_only(input: &str) -> IResult<&str, Option<NaiveDate>> {
 }
 
 /// Recognizes the `month` and `day` parts separated by the
-/// [`numeric_date_parts_separator`] using the [`mm`] and [`dd`] parsers
+/// [`numeric_date_parts_separator`] using the [`mm`] and [`dd`] parsers.
 pub fn mm_dd(input: &str) -> IResult<&str, (u32, u32)> {
     separated_pair(mm, numeric_date_parts_separator, dd)(input)
 }
@@ -121,7 +121,7 @@ pub fn mm_dd(input: &str) -> IResult<&str, (u32, u32)> {
 /// Recognizes the `month` and `day` parts separated by the
 /// [`numeric_date_parts_separator`] and returns the [`NaiveDate`] with the
 /// selected day, month and current year if the date exists, otherwise returns
-/// `None`
+/// `None`.
 ///
 /// # Examples
 ///
@@ -145,16 +145,16 @@ pub fn mm_dd_only(input: &str) -> IResult<&str, Option<NaiveDate>> {
     ))
 }
 
-/// Recognizes four digits of the `year` part
+/// Recognizes four digits of the `year` part.
 ///
-/// Accepts numbers in the range `0000..=9999`, technically
+/// Accepts numbers in the range `0000..=9999`, technically.
 pub fn y4(input: &str) -> IResult<&str, u32> {
     map_res(take(4_u8), |s: &str| s.parse::<u32>())(input)
 }
 
 /// Recognizes the `year`, `month` and `day` parts separated by the
 /// [`numeric_date_parts_separator`] and returns [`NaiveDate`] with the selected
-/// parts if the date exists, otherwise returns `None`
+/// parts if the date exists, otherwise returns `None`.
 ///
 /// # Examples
 ///
@@ -183,7 +183,7 @@ pub fn y4_mm_dd(input: &str) -> IResult<&str, Option<NaiveDate>> {
 
 /// Recognizes the `day`, `month` and `year` parts separated by the
 /// [`numeric_date_parts_separator`] and returns [`NaiveDate`] with the selected
-/// parts if the date exists, otherwise returns `None`
+/// parts if the date exists, otherwise returns `None`.
 ///
 /// # Examples
 ///
@@ -212,7 +212,7 @@ pub fn dd_mm_y4(input: &str) -> IResult<&str, Option<NaiveDate>> {
 
 /// Recognizes the `month`, `day` and `year` parts separated by the
 /// [`numeric_date_parts_separator`] and returns [`NaiveDate`] with the selected
-/// parts if the date exists, otherwise returns `None`
+/// parts if the date exists, otherwise returns `None`.
 ///
 /// # Examples
 ///
@@ -248,10 +248,6 @@ mod tests {
 
     use super::*;
 
-    fn now_date_naive() -> NaiveDate {
-        Local::now().date_naive()
-    }
-
     #[rstest]
     #[case("9", Ok(("", 9)))]
     #[case("09", Ok(("", 9)))]
@@ -263,9 +259,9 @@ mod tests {
     }
 
     #[rstest]
-    #[case("9", Ok(("", now_date_naive().with_day(9))))]
-    #[case("09", Ok(("", now_date_naive().with_day(9))))]
-    #[case("31", Ok(("", now_date_naive().with_day(31))))]
+    #[case("9", Ok(("", Local::now().date_naive().with_day(9))))]
+    #[case("09", Ok(("", Local::now().date_naive().with_day(9))))]
+    #[case("31", Ok(("", Local::now().date_naive().with_day(31))))]
     #[case("00", Err(nom::Err::Error(Error::DayOutOfRange)))]
     #[case("42", Err(nom::Err::Error(Error::DayOutOfRange)))]
     fn test_dd_only(#[case] input: &str, #[case] expected: IResult<&str, Option<NaiveDate>>) {
@@ -283,9 +279,9 @@ mod tests {
     }
 
     #[rstest]
-    #[case("3/9", Ok(("", now_date_naive().with_day(3).unwrap().with_month(9))))]
-    #[case("03-09", Ok(("", now_date_naive().with_day(3).unwrap().with_month(9))))]
-    #[case("03/12", Ok(("", now_date_naive().with_day(3).unwrap().with_month(12))))]
+    #[case("3/9", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(9))))]
+    #[case("03-09", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(9))))]
+    #[case("03/12", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(12))))]
     #[case("00", Err(nom::Err::Error(Error::DayOutOfRange)))]
     #[case("42", Err(nom::Err::Error(Error::DayOutOfRange)))]
     #[case("13.00", Err(nom::Err::Error(Error::MonthOutOfRange)))]
