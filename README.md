@@ -13,8 +13,11 @@
   <img alt="Crates.io Total Downloads" src="https://img.shields.io/crates/d/nom-date-parsers">
 </div>
 
-The bunch of combinators written with help of [nom](https://docs.rs/nom/latest/nom/) to parse the 
-`numeric` and `language-specific` dates. `Russian` (`ru` feature flag) and `English` (`en` feature flag, enabled by default) are currently supported.
+The bunch of combinators written with help of [nom](https://docs.rs/nom/latest/nom/) to parse the `numeric` and `language-specific` dates. 
+
+Currently the following languages are supported:
+- `Russian` (`ru` feature flag)
+- `English` (`en` feature flag, *enabled by default*)
 
 This crate can be used to write other parsers or standalone to parse [`chrono::NaiveDate`](https://docs.rs/chrono/latest/chrono/struct.NaiveDate.html)s from strings.
 
