@@ -1,4 +1,17 @@
-# Numeric and language-specific date parsers
+<div align="center">
+  <h1><code>nom-date-parsers</code></h1>
+
+  <a href="https://github.com/syrtcevvi/nom-date-parsers/actions/workflows/ci.yml">
+    <img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/syrtcevvi/nom-date-parsers/ci.yml">
+  </a>
+  <a href="https://docs.rs/nom-date-parsers/latest/nom_date_parsers/">
+    <img alt="docs.rs" src="https://img.shields.io/docsrs/nom-date-parsers">
+  </a>
+  <a href="https://crates.io/crates/nom-date-parsers">
+    <img alt="Crates.io Version" src="https://img.shields.io/crates/v/nom-date-parsers">
+  </a>
+  <img alt="Crates.io Total Downloads" src="https://img.shields.io/crates/d/nom-date-parsers">
+</div>
 
 The bunch of combinators written with help of [nom](https://docs.rs/nom/latest/nom/) to parse the 
 `numeric` and `language-specific` dates. `Russian` (`ru` feature flag) and `English` (`en` feature flag, enabled by default) are currently supported.
