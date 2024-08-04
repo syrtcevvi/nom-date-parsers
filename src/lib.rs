@@ -8,4 +8,4 @@ pub mod prelude;
 #[cfg(feature = "quick")]
 pub mod quick;
 
-mod types;
+pub mod types;

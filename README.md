@@ -21,6 +21,8 @@ Currently the following languages are supported:
 
 This crate can be used to write other parsers or standalone to parse [`chrono::NaiveDate`](https://docs.rs/chrono/latest/chrono/struct.NaiveDate.html)s from strings.
 
+This crate uses `chrono::Local` type for almost all date computations.
+
 ## Why?
 I work on my telegram bot and provide to my users the way to get some information by the date in the format: dd-mm-yyyy. Indeed some of them get the correct format and successfully receive what they want. Others just throw something vaguely reminiscent of the date and complain that bot can't understand them. So, this crate tries to solve this problem.
 

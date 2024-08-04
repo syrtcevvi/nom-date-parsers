@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## unreleased
+## Changed
+- `types` module now is `public`
+
 ## 0.2.0 - 2024-07-22
 ### Added
 - Module `quick` with the following functions:
