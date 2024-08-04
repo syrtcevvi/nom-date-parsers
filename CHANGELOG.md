@@ -3,8 +3,17 @@
 All notable changes to this project will be documented in this file.
 
 ## unreleased
+### Added
+- `quick::bundle` parser which combines the capabilities of the `forward_from_now` and `backward_from_now` parsers
+- New parsers:
+    - `short_named_weekday_dot`
+
 ## Changed
 - `types` module now is `public`
+- `named_weekday` parser was extended with `short_named_weekday_dot` parser
+
+## Deleted
+- Optional variants of parsers introduced in the `0.2.0`. Now parsers return either *parsed date* or `Error`
 
 ## 0.2.0 - 2024-07-22
 ### Added

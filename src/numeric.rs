@@ -44,7 +44,7 @@ pub fn dd(input: &str) -> IResult<&str, u32> {
 
 /// Recognizes either one or two digits of a `day` part and returns the
 /// [`NaiveDate`] with the selected day and current month and year if the date
-/// exists, otherwise returns `None`.
+/// exists, otherwise returns [`Error::NonExistentDate`].
 ///
 /// # Examples
 ///
@@ -52,17 +52,23 @@ pub fn dd(input: &str) -> IResult<&str, u32> {
 /// use chrono::prelude::*;
 /// use nom_date_parsers::prelude::*;
 ///
-/// assert_eq!(dd_only("13")?.1, Local::now().date_naive().with_day(13));
+/// assert_eq!(
+///     dd_only("13")?.1,
+///     Local::now().date_naive().with_day(13).unwrap()
+/// );
 /// assert_eq!(dd_only("42"), Err(nom::Err::Error(Error::DayOutOfRange)));
 ///
 /// # Ok::<(), Box::<dyn std::error::Error>>(())
 /// ```
-pub fn dd_only(input: &str) -> IResult<&str, Option<NaiveDate>> {
+pub fn dd_only(input: &str) -> IResult<&str, NaiveDate> {
     let (input, day) = dd(input)?;
     let now = Local::now();
     let (month, year) = (now.month(), now.year());
 
-    Ok((input, NaiveDate::from_ymd_opt(year, month, day)))
+    Ok((
+        input,
+        NaiveDate::from_ymd_opt(year, month, day).ok_or(nom::Err::Error(Error::NonExistentDate))?,
+    ))
 }
 
 /// Recognizes either one or two digits of a `month` part.
@@ -90,7 +96,7 @@ pub fn dd_mm(input: &str) -> IResult<&str, (u32, u32)> {
 /// Recognizes the `day` and `month` parts separated by the
 /// [`numeric_date_parts_separator`] and returns the [`NaiveDate`] with the
 /// selected day, month and current year if the date exists, otherwise returns
-/// `None`.
+/// [`Error::NonExistentDate`].
 ///
 /// # Examples
 ///
@@ -99,17 +105,22 @@ pub fn dd_mm(input: &str) -> IResult<&str, (u32, u32)> {
 /// use nom_date_parsers::prelude::*;
 ///
 /// assert_eq!(
-///     dd_mm_only("18-10")?.1,
-///     NaiveDate::from_ymd_opt(Local::now().year(), 10, 18)
+///     dd_mm_only("31-02"),
+///     NaiveDate::from_ymd_opt(Local::now().year(), 2, 31)
+///         .ok_or(nom::Err::Error(Error::NonExistentDate))
+///         .map(|d| ("", d))
 /// );
 ///
 /// # Ok::<(), Box::<dyn std::error::Error>>(())
 /// ```
-pub fn dd_mm_only(input: &str) -> IResult<&str, Option<NaiveDate>> {
+pub fn dd_mm_only(input: &str) -> IResult<&str, NaiveDate> {
     let (input, (day, month)) = dd_mm(input)?;
     let year = Local::now().year();
 
-    Ok((input, NaiveDate::from_ymd_opt(year, month, day)))
+    Ok((
+        input,
+        NaiveDate::from_ymd_opt(year, month, day).ok_or(nom::Err::Error(Error::NonExistentDate))?,
+    ))
 }
 
 /// Recognizes the `month` and `day` parts separated by the
@@ -121,7 +132,7 @@ pub fn mm_dd(input: &str) -> IResult<&str, (u32, u32)> {
 /// Recognizes the `month` and `day` parts separated by the
 /// [`numeric_date_parts_separator`] and returns the [`NaiveDate`] with the
 /// selected day, month and current year if the date exists, otherwise returns
-/// `None`.
+/// [`Error::NonExistentDate`].
 ///
 /// # Examples
 ///
@@ -131,17 +142,18 @@ pub fn mm_dd(input: &str) -> IResult<&str, (u32, u32)> {
 ///
 /// assert_eq!(
 ///     mm_dd_only("10/18")?.1,
-///     NaiveDate::from_ymd_opt(Local::now().year(), 10, 18)
+///     NaiveDate::from_ymd_opt(Local::now().year(), 10, 18).unwrap()
 /// );
 ///
 /// # Ok::<(), Box::<dyn std::error::Error>>(())
 /// ```
-pub fn mm_dd_only(input: &str) -> IResult<&str, Option<NaiveDate>> {
+pub fn mm_dd_only(input: &str) -> IResult<&str, NaiveDate> {
     let (input, (month, day)) = mm_dd(input)?;
 
     Ok((
         input,
-        NaiveDate::from_ymd_opt(Local::now().year(), month, day),
+        NaiveDate::from_ymd_opt(Local::now().year(), month, day)
+            .ok_or(nom::Err::Error(Error::NonExistentDate))?,
     ))
 }
 
@@ -154,7 +166,7 @@ pub fn y4(input: &str) -> IResult<&str, u32> {
 
 /// Recognizes the `year`, `month` and `day` parts separated by the
 /// [`numeric_date_parts_separator`] and returns [`NaiveDate`] with the selected
-/// parts if the date exists, otherwise returns `None`.
+/// parts if the date exists, otherwise returns [`Error::NonExistentDate`].
 ///
 /// # Examples
 ///
@@ -164,12 +176,12 @@ pub fn y4(input: &str) -> IResult<&str, u32> {
 ///
 /// assert_eq!(
 ///     y4_mm_dd("2024-07-13")?.1,
-///     NaiveDate::from_ymd_opt(2024, 7, 13)
+///     NaiveDate::from_ymd_opt(2024, 7, 13).unwrap()
 /// );
 ///
 /// # Ok::<(), Box::<dyn std::error::Error>>(())
 /// ```
-pub fn y4_mm_dd(input: &str) -> IResult<&str, Option<NaiveDate>> {
+pub fn y4_mm_dd(input: &str) -> IResult<&str, NaiveDate> {
     let (input, (y4, (), mm, (), dd)) = tuple((
         y4,
         numeric_date_parts_separator,
@@ -178,12 +190,16 @@ pub fn y4_mm_dd(input: &str) -> IResult<&str, Option<NaiveDate>> {
         dd,
     ))(input)?;
 
-    Ok((input, NaiveDate::from_ymd_opt(y4 as i32, mm, dd)))
+    Ok((
+        input,
+        NaiveDate::from_ymd_opt(y4 as i32, mm, dd)
+            .ok_or(nom::Err::Error(Error::NonExistentDate))?,
+    ))
 }
 
 /// Recognizes the `day`, `month` and `year` parts separated by the
 /// [`numeric_date_parts_separator`] and returns [`NaiveDate`] with the selected
-/// parts if the date exists, otherwise returns `None`.
+/// parts if the date exists, otherwise returns [`Error::NonExistentDate`].
 ///
 /// # Examples
 ///
@@ -193,12 +209,12 @@ pub fn y4_mm_dd(input: &str) -> IResult<&str, Option<NaiveDate>> {
 ///
 /// assert_eq!(
 ///     dd_mm_y4("13/07/2024")?.1,
-///     NaiveDate::from_ymd_opt(2024, 7, 13)
+///     NaiveDate::from_ymd_opt(2024, 7, 13).unwrap()
 /// );
 ///
 /// # Ok::<(), Box::<dyn std::error::Error>>(())
 /// ```
-pub fn dd_mm_y4(input: &str) -> IResult<&str, Option<NaiveDate>> {
+pub fn dd_mm_y4(input: &str) -> IResult<&str, NaiveDate> {
     let (input, (dd, (), mm, (), y4)) = tuple((
         dd,
         numeric_date_parts_separator,
@@ -207,12 +223,16 @@ pub fn dd_mm_y4(input: &str) -> IResult<&str, Option<NaiveDate>> {
         y4,
     ))(input)?;
 
-    Ok((input, NaiveDate::from_ymd_opt(y4 as i32, mm, dd)))
+    Ok((
+        input,
+        NaiveDate::from_ymd_opt(y4 as i32, mm, dd)
+            .ok_or(nom::Err::Error(Error::NonExistentDate))?,
+    ))
 }
 
 /// Recognizes the `month`, `day` and `year` parts separated by the
 /// [`numeric_date_parts_separator`] and returns [`NaiveDate`] with the selected
-/// parts if the date exists, otherwise returns `None`.
+/// parts if the date exists, otherwise returns [`Error::NonExistentDate`].
 ///
 /// # Examples
 ///
@@ -222,12 +242,12 @@ pub fn dd_mm_y4(input: &str) -> IResult<&str, Option<NaiveDate>> {
 ///
 /// assert_eq!(
 ///     mm_dd_y4("07-13-2024")?.1,
-///     NaiveDate::from_ymd_opt(2024, 7, 13)
+///     NaiveDate::from_ymd_opt(2024, 7, 13).unwrap()
 /// );
 ///
 /// # Ok::<(), Box::<dyn std::error::Error>>(())
 /// ```
-pub fn mm_dd_y4(input: &str) -> IResult<&str, Option<NaiveDate>> {
+pub fn mm_dd_y4(input: &str) -> IResult<&str, NaiveDate> {
     let (input, (mm, (), dd, (), y4)) = tuple((
         mm,
         numeric_date_parts_separator,
@@ -236,7 +256,11 @@ pub fn mm_dd_y4(input: &str) -> IResult<&str, Option<NaiveDate>> {
         y4,
     ))(input)?;
 
-    Ok((input, NaiveDate::from_ymd_opt(y4 as i32, mm, dd)))
+    Ok((
+        input,
+        NaiveDate::from_ymd_opt(y4 as i32, mm, dd)
+            .ok_or(nom::Err::Error(Error::NonExistentDate))?,
+    ))
 }
 
 #[cfg(test)]
@@ -259,12 +283,12 @@ mod tests {
     }
 
     #[rstest]
-    #[case("9", Ok(("", Local::now().date_naive().with_day(9))))]
-    #[case("09", Ok(("", Local::now().date_naive().with_day(9))))]
-    #[case("31", Ok(("", Local::now().date_naive().with_day(31))))]
+    #[case("9", Ok(("", Local::now().date_naive().with_day(9).unwrap())))]
+    #[case("09", Ok(("", Local::now().date_naive().with_day(9).unwrap())))]
+    #[case("31", Local::now().date_naive().with_day(31).ok_or(nom::Err::Error(Error::NonExistentDate)).map(|d| ("", d)))]
     #[case("00", Err(nom::Err::Error(Error::DayOutOfRange)))]
     #[case("42", Err(nom::Err::Error(Error::DayOutOfRange)))]
-    fn test_dd_only(#[case] input: &str, #[case] expected: IResult<&str, Option<NaiveDate>>) {
+    fn test_dd_only(#[case] input: &str, #[case] expected: IResult<&str, NaiveDate>) {
         assert_eq!(dd_only(input), expected)
     }
 
@@ -279,14 +303,14 @@ mod tests {
     }
 
     #[rstest]
-    #[case("3/9", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(9))))]
-    #[case("03-09", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(9))))]
-    #[case("03/12", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(12))))]
+    #[case("3/9", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(9).unwrap())))]
+    #[case("03-09", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(9).unwrap())))]
+    #[case("03/12", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(12).unwrap())))]
     #[case("00", Err(nom::Err::Error(Error::DayOutOfRange)))]
     #[case("42", Err(nom::Err::Error(Error::DayOutOfRange)))]
     #[case("13.00", Err(nom::Err::Error(Error::MonthOutOfRange)))]
     #[case("13\t13", Err(nom::Err::Error(Error::MonthOutOfRange)))]
-    fn test_dd_mm_only(#[case] input: &str, #[case] expected: IResult<&str, Option<NaiveDate>>) {
+    fn test_dd_mm_only(#[case] input: &str, #[case] expected: IResult<&str, NaiveDate>) {
         assert_eq!(dd_mm_only(input), expected);
     }
 
@@ -300,41 +324,43 @@ mod tests {
     }
 
     #[rstest]
-    #[case("2024-06-13", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
-    #[case("2024/06-13", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
-    #[case("2024.06.13", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
-    #[case("2024    06\t13", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
+    #[case("2024-06-13", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
+    #[case("2024/06-13", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
+    #[case("2024.06.13", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
+    #[case("2024    06\t13", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
     #[case("2024/00/06", Err(nom::Err::Error(Error::MonthOutOfRange)))]
     #[case("2024/13/06", Err(nom::Err::Error(Error::MonthOutOfRange)))]
     #[case("2024/10/00", Err(nom::Err::Error(Error::DayOutOfRange)))]
     #[case("2024/10/42", Err(nom::Err::Error(Error::DayOutOfRange)))]
-    fn test_y4_mm_dd(#[case] input: &str, #[case] expected: IResult<&str, Option<NaiveDate>>) {
+    fn test_y4_mm_dd(#[case] input: &str, #[case] expected: IResult<&str, NaiveDate>) {
         assert_eq!(y4_mm_dd(input), expected);
     }
 
     #[rstest]
-    #[case("13-06-2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
-    #[case("13/06-2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
-    #[case("13.06.2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
-    #[case("13    06\t2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
+    #[case("13-06-2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
+    #[case("13/06-2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
+    #[case("13.06.2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
+    #[case("13    06\t2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
     #[case("00/10/2024", Err(nom::Err::Error(Error::DayOutOfRange)))]
     #[case("42/10/2024", Err(nom::Err::Error(Error::DayOutOfRange)))]
     #[case("06/00/2024", Err(nom::Err::Error(Error::MonthOutOfRange)))]
     #[case("06/13/2024", Err(nom::Err::Error(Error::MonthOutOfRange)))]
-    fn test_dd_mm_y4(#[case] input: &str, #[case] expected: IResult<&str, Option<NaiveDate>>) {
+    #[case("31/02/2024", Err(nom::Err::Error(Error::NonExistentDate)))]
+    fn test_dd_mm_y4(#[case] input: &str, #[case] expected: IResult<&str, NaiveDate>) {
         assert_eq!(dd_mm_y4(input), expected);
     }
 
     #[rstest]
-    #[case("06-13-2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
-    #[case("06/13-2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
-    #[case("06.13.2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
-    #[case("06    13\t2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13))))]
+    #[case("06-13-2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
+    #[case("06/13-2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
+    #[case("06.13.2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
+    #[case("06    13\t2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
     #[case("00/06/2024", Err(nom::Err::Error(Error::MonthOutOfRange)))]
     #[case("13/06/2024", Err(nom::Err::Error(Error::MonthOutOfRange)))]
     #[case("10/00/2024", Err(nom::Err::Error(Error::DayOutOfRange)))]
     #[case("10/32/2024", Err(nom::Err::Error(Error::DayOutOfRange)))]
-    fn test_mm_dd_y4(#[case] input: &str, #[case] expected: IResult<&str, Option<NaiveDate>>) {
+    #[case("02/31/2024", Err(nom::Err::Error(Error::NonExistentDate)))]
+    fn test_mm_dd_y4(#[case] input: &str, #[case] expected: IResult<&str, NaiveDate>) {
         assert_eq!(mm_dd_y4(input), expected)
     }
 }

@@ -6,8 +6,9 @@ use nom::error::{ErrorKind, FromExternalError, ParseError};
 pub enum Error<I> {
     DayOutOfRange,
     MonthOutOfRange,
-    YearOutOfRange,
+    NonExistentDate,
     ParseIntError(I, ErrorKind, ParseIntError),
+
     Nom(I, ErrorKind),
 }
 
