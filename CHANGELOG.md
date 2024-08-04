@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## unreleased
+## 1.0.0 - 2024-08-04
 ### Added
 - `quick::bundle` parser which combines the capabilities of the `forward_from_now` and `backward_from_now` parsers
 - `cli` example  provides the interactive way to try some parsers out
