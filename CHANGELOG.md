@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## unreleased
 ### Added
 - `quick::bundle` parser which combines the capabilities of the `forward_from_now` and `backward_from_now` parsers
+- `cli` example  provides the interactive way to try some parsers out
 - New parsers:
     - `short_named_weekday_dot`
 
