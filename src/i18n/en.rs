@@ -19,6 +19,7 @@ pub use self::{relative::*, weekday::*};
 ///     - [`dd_only`]
 /// - Language-specific
 ///     - [`yesterday`]
+///     - [`today`]
 ///     - [`tomorrow`]
 ///     - [`current_named_weekday_only`]
 ///
@@ -29,6 +30,7 @@ pub fn bundle_dmy(input: &str) -> IResult<&str, NaiveDate> {
         dd_mm_only,
         dd_only,
         yesterday,
+        today,
         tomorrow,
         current_named_weekday_only,
     ))(input)
@@ -42,6 +44,7 @@ pub fn bundle_dmy(input: &str) -> IResult<&str, NaiveDate> {
 ///     - [`dd_only`]
 /// - Language-specific
 ///     - [`yesterday`]
+///     - [`today`]
 ///     - [`tomorrow`]
 ///     - [`current_named_weekday_only`]
 ///
@@ -52,6 +55,7 @@ pub fn bundle_mdy(input: &str) -> IResult<&str, NaiveDate> {
         mm_dd_only,
         dd_only,
         yesterday,
+        today,
         tomorrow,
         current_named_weekday_only,
     ))(input)
@@ -72,6 +76,7 @@ mod tests {
     #[case("03/12", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(12).unwrap())))]
     #[case("13    06\t2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
     #[case("Yesterday", Ok(("", Local::now().sub(Days::new(1)).date_naive())))]
+    #[case("Today", Ok(("", Local::now().date_naive())))]
     #[case("Tomorrow", Ok(("", Local::now().add(Days::new(1)).date_naive())))]
     fn test_bundle_dmy(#[case] input: &str, #[case] expected: IResult<&str, NaiveDate>) {
         assert_eq!(bundle_dmy(input), expected)
@@ -82,6 +87,7 @@ mod tests {
     #[case("12/03", Ok(("", Local::now().date_naive().with_day(3).unwrap().with_month(12).unwrap())))]
     #[case("06    13\t2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
     #[case("Yesterday", Ok(("", Local::now().sub(Days::new(1)).date_naive())))]
+    #[case("Today", Ok(("", Local::now().date_naive())))]
     #[case("Tomorrow", Ok(("", Local::now().add(Days::new(1)).date_naive())))]
     fn test_bundle_mdy(#[case] input: &str, #[case] expected: IResult<&str, NaiveDate>) {
         assert_eq!(bundle_mdy(input), expected)

@@ -20,6 +20,7 @@ pub use self::{relative::*, weekday::*};
 /// - Language-specific
 ///     - [`day_before_yesterday`]
 ///     - [`yesterday`]
+///     - [`today`]
 ///     - [`tomorrow`]
 ///     - [`day_after_tomorrow`]
 ///     - [`current_named_weekday_only`]
@@ -32,6 +33,7 @@ pub fn bundle(input: &str) -> IResult<&str, NaiveDate> {
         dd_only,
         day_before_yesterday,
         yesterday,
+        today,
         tomorrow,
         day_after_tomorrow,
         current_named_weekday_only,
@@ -55,6 +57,7 @@ mod tests {
     #[case("13    06\t2024", Ok(("", NaiveDate::from_ymd_opt(2024, 6, 13).unwrap())))]
     #[case("позавчера", Ok(("", Local::now().sub(Days::new(2)).date_naive())))]
     #[case("Вчера", Ok(("", Local::now().sub(Days::new(1)).date_naive())))]
+    #[case("Сегодня", Ok(("", Local::now().date_naive())))]
     #[case("Завтра", Ok(("", Local::now().add(Days::new(1)).date_naive())))]
     #[case("послезавтра", Ok(("", Local::now().add(Days::new(2)).date_naive())))]
     fn test_bundle(#[case] input: &str, #[case] expected: IResult<&str, NaiveDate>) {

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.0 - 2024-08-08
+### Added
+- New parser `today` for `ru` and `en` modules.
+- `today` parser was added to the `ru::bundle`, `en::bundle_dmy` and `en::bundle_mdy` bundle-parsers.
+
 ## 1.0.0 - 2024-08-04
 ### Added
 - `quick::bundle` parser which combines the capabilities of the `forward_from_now` and `backward_from_now` parsers

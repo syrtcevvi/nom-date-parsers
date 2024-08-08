@@ -29,6 +29,22 @@ pub fn yesterday(input: &str) -> IResult<&str, NaiveDate> {
     )(input)
 }
 
+/// Recognizes the `case insensitive` word `today` in `English` and returns
+/// the corresponding [`NaiveDate`] for it.
+///
+/// # Examples
+///
+/// ```
+/// use chrono::Local;
+/// use nom_date_parsers::i18n::en::today;
+///
+/// assert_eq!(today("Today")?.1, Local::now().date_naive());
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+pub fn today(input: &str) -> IResult<&str, NaiveDate> {
+    value(Local::now().date_naive(), tag_no_case("today"))(input)
+}
+
 /// Recognizes the `case insensitive` word `tomorrow` in `English` and returns
 /// the corresponding [`NaiveDate`] for it.
 ///
@@ -65,6 +81,12 @@ mod tests {
     #[case("Yesterday", Ok(("", Local::now().sub(Days::new(1)).date_naive())))]
     fn test_yesterday(#[case] input: &str, #[case] expected: IResult<&str, NaiveDate>) {
         assert_eq!(yesterday(input), expected);
+    }
+
+    #[rstest]
+    #[case("Today", Ok(("", Local::now().date_naive())))]
+    fn test_today(#[case] input: &str, #[case] expected: IResult<&str, NaiveDate>) {
+        assert_eq!(today(input), expected);
     }
 
     #[rstest]
